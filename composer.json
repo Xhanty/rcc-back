@@ -14,7 +14,8 @@
         "laravel/tinker": "^2.10.1",
         "leandrocfe/filament-apex-charts": "^5.1",
         "livewire/livewire": "^4.4",
-        "muazzam/slick-scrollbar": "^1.1"
+        "muazzam/slick-scrollbar": "^1.1",
+        "swisnl/filament-backgrounds": "^2.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

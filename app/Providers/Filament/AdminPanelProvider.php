@@ -22,6 +22,8 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 use Muazzam\SlickScrollbar\SlickScrollbarPlugin;
+use Swis\Filament\Backgrounds\FilamentBackgroundsPlugin;
+use Swis\Filament\Backgrounds\ImageProviders\MyImages;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -61,6 +63,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 SlickScrollbarPlugin::make(),
+                FilamentBackgroundsPlugin::make()
+                    ->imageProvider(
+                        MyImages::make()
+                            ->directory('backgrounds')
+                    ),
                 BreezyCore::make()
                     ->myProfile()
                     ->enableTwoFactorAuthentication()
