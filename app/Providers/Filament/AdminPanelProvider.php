@@ -37,6 +37,16 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->brandLogo(new \Illuminate\Support\HtmlString('
+                <div style="display: flex; flex-direction: row; align-items: center; gap: 0.625rem; height: 2.25rem; white-space: nowrap;">
+                    <img src="' . asset('icon.png') . '" alt="Logo" style="height: 2.25rem; width: auto; max-height: 100%; flex-shrink: 0;" />
+                    <span style="font-weight: 700; font-size: 1.125rem; line-height: 1.75rem; color: inherit;" class="text-gray-950 dark:text-white">
+                        Resucitados RCC
+                    </span>
+                </div>
+            '))
+            ->brandLogoHeight('2.25rem')
+            ->favicon(asset('icon.png'))
             ->navigationGroups([
                 NavigationGroup::make('Administración'),
                 NavigationGroup::make('Configuración'),
