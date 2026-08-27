@@ -109,7 +109,7 @@ class EventResource extends Resource
                             FileUpload::make('banner_image_path')
                                 ->label('Imagen de Portada (Banner)')
                                 ->image()
-                                ->maxSize(2048)
+                                ->maxSize(5120)
                                 ->directory('events/banners')
                                 ->visibility('public')
                                 ->columnSpanFull(),
