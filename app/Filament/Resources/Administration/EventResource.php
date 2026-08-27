@@ -110,6 +110,7 @@ class EventResource extends Resource
                                 ->label('Imagen de Portada (Banner)')
                                 ->image()
                                 ->maxSize(5120)
+                                ->disk('public')
                                 ->visibility('public')
                                 ->directory('events/banners')
                                 ->columnSpanFull(),
