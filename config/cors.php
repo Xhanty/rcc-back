@@ -21,8 +21,8 @@ return [
 
     'allowed_origins' => [
         env('FRONTEND_URL', '*'), // Carga la URL del frontend desde el archivo .env o permite todo por defecto
-        'http://localhost:3000',  // React / Next.js local development
-        'http://127.0.0.1:3000',
+        'http://localhost:5173',  // React / Next.js local development
+        'http://127.0.0.1:5173',
     ],
 
     'allowed_origins_patterns' => [],
