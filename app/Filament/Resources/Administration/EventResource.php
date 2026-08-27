@@ -110,8 +110,8 @@ class EventResource extends Resource
                                 ->label('Imagen de Portada (Banner)')
                                 ->image()
                                 ->maxSize(5120)
-                                ->directory('events/banners')
                                 ->visibility('public')
+                                ->directory('events/banners')
                                 ->columnSpanFull(),
                         ]),
 
@@ -291,7 +291,7 @@ class EventResource extends Resource
                         ->label('Ver Asistentes')
                         ->icon(Heroicon::OutlinedUsers)
                         ->color('success')
-                        ->url(fn (Event $record): string => static::getUrl('assistants', ['record' => $record])),
+                        ->url(fn(Event $record): string => static::getUrl('assistants', ['record' => $record])),
 
                     DeleteAction::make()
                         ->label('Eliminar')
