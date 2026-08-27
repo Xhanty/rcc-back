@@ -46,6 +46,12 @@ class PetitionResource extends Resource
             ->components([
                 TextInput::make('name')
                     ->label('Nombre')
+                    ->prefixIcon(Heroicon::OutlinedUser)
+                    ->readOnly(),
+
+                TextInput::make('phone')
+                    ->label('Teléfono')
+                    ->prefixIcon(Heroicon::OutlinedPhone)
                     ->readOnly(),
 
                 Textarea::make('petition')
@@ -55,7 +61,8 @@ class PetitionResource extends Resource
 
                 TextInput::make('status')
                     ->label('Estado')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->prefixIcon(Heroicon::OutlinedCheckCircle)
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'pending' => 'Pendiente',
                         'completed' => 'Completado',
                         default => $state,
@@ -64,19 +71,30 @@ class PetitionResource extends Resource
 
                 TextInput::make('created_at')
                     ->label('Fecha de Envío')
+                    ->prefixIcon(Heroicon::OutlinedCalendar)
+                    ->formatStateUsing(fn($state) => $state ? \Carbon\Carbon::parse($state)->format('d/m/Y H:i A') : null)
                     ->readOnly(),
-            ]);
+            ])
+            ->columns(1);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->striped()
+            ->searchPlaceholder('Buscar por nombre o petición...')
+            ->searchDebounce('500ms')
             ->emptyStateHeading('No hay peticiones de oración')
             ->emptyStateDescription('Las peticiones enviadas desde la web aparecerán aquí.')
             ->emptyStateIcon(Heroicon::OutlinedHeart)
             ->columns([
                 TextColumn::make('name')
                     ->label('Nombre')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('phone')
+                    ->label('Teléfono')
                     ->searchable()
                     ->sortable(),
 

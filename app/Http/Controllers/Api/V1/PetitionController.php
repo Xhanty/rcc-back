@@ -16,9 +16,12 @@ class PetitionController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:50',
             'petition' => 'required|string|max:5000',
         ], [
             'name.required' => 'El nombre es obligatorio.',
+            'email.email' => 'El correo electrónico debe ser una dirección válida.',
             'petition.required' => 'La petición es obligatoria.',
         ]);
 

@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('petitions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('phone')->nullable();
+            $table->string('email')->nullable();
             $table->text('petition');
             $table->enum('status', ['pending', 'completed'])->default('pending');
             $table->timestamps();

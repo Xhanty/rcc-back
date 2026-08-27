@@ -46,14 +46,22 @@ class ContactResource extends Resource
             ->components([
                 TextInput::make('name')
                     ->label('Nombre')
+                    ->prefixIcon(Heroicon::OutlinedUser)
                     ->readOnly(),
 
                 TextInput::make('email')
                     ->label('Correo Electrónico')
+                    ->prefixIcon(Heroicon::OutlinedEnvelope)
+                    ->readOnly(),
+
+                TextInput::make('phone')
+                    ->label('Teléfono')
+                    ->prefixIcon(Heroicon::OutlinedPhone)
                     ->readOnly(),
 
                 TextInput::make('subject')
                     ->label('Asunto')
+                    ->prefixIcon(Heroicon::OutlinedChatBubbleBottomCenterText)
                     ->readOnly(),
 
                 Textarea::make('message')
@@ -63,7 +71,8 @@ class ContactResource extends Resource
 
                 TextInput::make('status')
                     ->label('Estado')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->prefixIcon(Heroicon::OutlinedCheckCircle)
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'pending' => 'Pendiente',
                         'completed' => 'Completado',
                         default => $state,
@@ -72,13 +81,19 @@ class ContactResource extends Resource
 
                 TextInput::make('created_at')
                     ->label('Fecha de Envío')
+                    ->prefixIcon(Heroicon::OutlinedCalendar)
+                    ->formatStateUsing(fn ($state) => $state ? \Carbon\Carbon::parse($state)->format('d/m/Y H:i A') : null)
                     ->readOnly(),
-            ]);
+            ])
+            ->columns(1);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->striped()
+            ->searchPlaceholder('Buscar por nombre o asunto...')
+            ->searchDebounce('500ms')
             ->emptyStateHeading('No hay mensajes de contacto')
             ->emptyStateDescription('Los mensajes enviados desde la web aparecerán aquí.')
             ->emptyStateIcon(Heroicon::OutlinedEnvelope)
@@ -88,8 +103,8 @@ class ContactResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('email')
-                    ->label('Correo Electrónico')
+                TextColumn::make('phone')
+                    ->label('Teléfono')
                     ->searchable()
                     ->sortable(),
 

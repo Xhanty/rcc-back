@@ -13,6 +13,8 @@ class Petition extends Model
 
     protected $fillable = [
         'name',
+        'phone', // nullable
+        'email', // nullable
         'petition',
         'status',
     ];

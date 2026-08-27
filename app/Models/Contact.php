@@ -11,7 +11,8 @@ class Contact extends Model
 
     protected $fillable = [
         'name',
-        'email',
+        'phone', // nullable
+        'email', // nullable
         'subject',
         'message',
         'status', // enum: pending, completed
