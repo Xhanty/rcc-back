@@ -2,9 +2,9 @@
     <form wire:submit="authenticate" class="space-y-6">
         {{ $this->form }}
 
-        <div>
-            <x-filament::button type="submit" color="primary" class="w-full">
-                {{ __('filament-breezy::default.fields.login') }}
+        <div style="width: 100%;">
+            <x-filament::button type="submit" color="primary" style="width: 100%; display: flex; justify-content: center;">
+                Confirmar
             </x-filament::button>
         </div>
     </form>

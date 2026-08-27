@@ -15,7 +15,7 @@ class EventsChart extends ApexChartWidget
 {
     use HasFiltersSchema;
 
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 4;
 
     protected static ?string $chartId = 'eventsChart';
 
@@ -30,7 +30,7 @@ class EventsChart extends ApexChartWidget
     public function filtersSchema(Schema $schema): Schema
     {
         $currentYear = now()->year;
-        
+
         $years = Event::query()
             ->selectRaw('YEAR(start_datetime) as year')
             ->distinct()
@@ -55,7 +55,7 @@ class EventsChart extends ApexChartWidget
 
             Select::make('event_type_id')
                 ->label('Tipo de Evento')
-                ->options(fn () => EventType::pluck('name', 'id')->toArray())
+                ->options(fn() => EventType::pluck('name', 'id')->toArray())
                 ->placeholder('Todos')
                 ->searchable()
                 ->preload(),
@@ -83,7 +83,7 @@ class EventsChart extends ApexChartWidget
                 ->searchable()
                 ->preload(),
         ])
-        ->columns(4);
+            ->columns(4);
     }
 
     public function updatedInteractsWithSchemas(string $statePath): void
