@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Configuration;
 
 use App\Filament\Resources\Configuration\EventTypeResource\Pages;
 use App\Models\EventType;
+use Illuminate\Support\Facades\Auth;
 use BackedEnum;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -35,6 +36,11 @@ class EventTypeResource extends Resource
     protected static ?string $modelLabel = 'Tipo de Evento';
 
     protected static ?string $pluralModelLabel = 'Tipos de Eventos';
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->hasModuleAccess('event_types') ?? false;
+    }
 
     protected static ?string $navigationLabel = 'Tipo de Eventos';
 

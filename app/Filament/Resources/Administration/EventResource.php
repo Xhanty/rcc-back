@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Administration;
 
 use App\Filament\Resources\Administration\EventResource\Pages;
 use App\Models\Event;
+use Illuminate\Support\Facades\Auth;
 use BackedEnum;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -48,6 +49,11 @@ class EventResource extends Resource
     protected static ?string $modelLabel = 'Evento';
 
     protected static ?string $pluralModelLabel = 'Eventos';
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->hasModuleAccess('events') ?? false;
+    }
 
     protected static ?string $navigationLabel = 'Eventos';
 

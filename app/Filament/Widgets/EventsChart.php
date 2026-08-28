@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Event;
 use App\Models\EventType;
+use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
@@ -14,6 +15,11 @@ use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 class EventsChart extends ApexChartWidget
 {
     use HasFiltersSchema;
+
+    public static function canView(): bool
+    {
+        return Auth::user()?->hasModuleAccess('events') ?? false;
+    }
 
     protected static ?int $sort = 4;
 

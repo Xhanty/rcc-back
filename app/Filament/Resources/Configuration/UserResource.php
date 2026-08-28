@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Configuration;
 
 use App\Filament\Resources\Configuration\UserResource\Pages;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -17,11 +18,14 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -35,6 +39,11 @@ class UserResource extends Resource
     protected static ?string $modelLabel = 'Usuario';
 
     protected static ?string $pluralModelLabel = 'Usuarios';
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->hasModuleAccess('users') ?? false;
+    }
 
     protected static ?string $navigationLabel = 'Usuarios';
 
@@ -104,6 +113,12 @@ class UserResource extends Resource
                     ->copyMessage('Correo copiado al portapapeles')
                     ->copyMessageDuration(1500),
 
+                IconColumn::make('is_super_admin')
+                    ->label('Admin')
+                    ->alignCenter()
+                    ->boolean()
+                    ->sortable(),
+
                 TextColumn::make('created_at')
                     ->label('Fecha de Creación')
                     ->dateTime('d/m/Y H:i')
@@ -172,6 +187,50 @@ class UserResource extends Resource
 
                             Notification::make()
                                 ->title('Contraseña actualizada con éxito')
+                                ->success()
+                                ->send();
+                        }),
+
+                    Action::make('assignModules')
+                        ->label('Asignar módulos')
+                        ->icon(Heroicon::OutlinedShieldCheck)
+                        ->color('success')
+                        ->modalHeading('Asignar Módulos y Permisos')
+                        ->modalDescription('Configura el rol de Administrador Maestro o los módulos específicos para este usuario.')
+                        ->modalSubmitActionLabel('Guardar')
+                        ->modalCancelActionLabel('Cancelar')
+                        ->modalWidth('md')
+                        ->fillForm(fn(User $record): array => [
+                            'is_super_admin' => $record->is_super_admin,
+                            'modules' => $record->modules,
+                        ])
+                        ->form([
+                            Toggle::make('is_super_admin')
+                                ->label('Administrador Maestro (Acceso Total)')
+                                ->live(),
+
+                            CheckboxList::make('modules')
+                                ->label('Módulos Asignados')
+                                ->options([
+                                    'events' => 'Eventos',
+                                    'event_types' => 'Tipos de Eventos',
+                                    'assistants' => 'Asistentes (CRUD)',
+                                    'attendance' => 'Asistencia (Registro Rápido)',
+                                    'contacts' => 'Mensajes de Contacto',
+                                    'petitions' => 'Peticiones de Oración',
+                                    'users' => 'Usuarios (Configuración)',
+                                ])
+                                ->columns(2)
+                                ->hidden(fn($get) => $get('is_super_admin')),
+                        ])
+                        ->action(function (User $record, array $data): void {
+                            $record->update([
+                                'is_super_admin' => $data['is_super_admin'],
+                                'modules' => $data['is_super_admin'] ? null : $data['modules'],
+                            ]);
+
+                            Notification::make()
+                                ->title('Módulos y permisos asignados con éxito')
                                 ->success()
                                 ->send();
                         }),

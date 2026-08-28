@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\AttendanceResource\Pages;
 use App\Models\Attendance;
+use Illuminate\Support\Facades\Auth;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
@@ -16,6 +17,11 @@ class AttendanceResource extends Resource
     protected static ?string $modelLabel = 'Asistencia';
 
     protected static ?string $pluralModelLabel = 'Asistencia';
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->hasModuleAccess('attendance') ?? false;
+    }
 
     protected static ?string $navigationLabel = 'Asistencia';
 

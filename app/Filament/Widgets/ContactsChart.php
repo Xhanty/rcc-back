@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Contact;
 use App\Models\Petition;
+use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 use Filament\Widgets\ChartWidget\Concerns\HasFiltersSchema;
@@ -12,6 +13,12 @@ use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 class ContactsChart extends ApexChartWidget
 {
     use HasFiltersSchema;
+
+    public static function canView(): bool
+    {
+        $user = Auth::user();
+        return $user?->hasModuleAccess('contacts') || $user?->hasModuleAccess('petitions') ?: false;
+    }
 
     protected static ?int $sort = 3;
 

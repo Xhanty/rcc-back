@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Administration;
 
 use App\Filament\Resources\Administration\PetitionResource\Pages;
 use App\Models\Petition;
+use Illuminate\Support\Facades\Auth;
 use BackedEnum;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -29,6 +30,11 @@ class PetitionResource extends Resource
     protected static ?string $modelLabel = 'Petición';
 
     protected static ?string $pluralModelLabel = 'Peticiones';
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->hasModuleAccess('petitions') ?? false;
+    }
 
     protected static ?string $navigationLabel = 'Peticiones';
 

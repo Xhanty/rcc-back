@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Administration;
 
 use App\Filament\Resources\Administration\AssistantResource\Pages;
 use App\Models\Assistant;
+use Illuminate\Support\Facades\Auth;
 use BackedEnum;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -33,6 +34,11 @@ class AssistantResource extends Resource
     protected static ?string $modelLabel = 'Asistente';
 
     protected static ?string $pluralModelLabel = 'Asistentes';
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->hasModuleAccess('assistants') ?? false;
+    }
 
     protected static ?string $navigationLabel = 'Asistentes';
 

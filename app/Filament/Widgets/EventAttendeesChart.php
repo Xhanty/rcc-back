@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Event;
+use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 use Filament\Widgets\ChartWidget\Concerns\HasFiltersSchema;
@@ -11,6 +12,12 @@ use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 class EventAttendeesChart extends ApexChartWidget
 {
     use HasFiltersSchema;
+
+    public static function canView(): bool
+    {
+        $user = Auth::user();
+        return $user?->hasModuleAccess('events') || $user?->hasModuleAccess('attendance') ?: false;
+    }
 
     protected static ?int $sort = 2;
 

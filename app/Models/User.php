@@ -25,6 +25,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'modules',
+        'is_super_admin',
     ];
 
     /**
@@ -47,6 +49,20 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'modules' => 'array',
+            'is_super_admin' => 'boolean',
         ];
+    }
+
+    /**
+     * Check if user has access to a specific module.
+     */
+    public function hasModuleAccess(string $module): bool
+    {
+        if ($this->is_super_admin) {
+            return true;
+        }
+
+        return in_array($module, $this->modules ?? []);
     }
 }

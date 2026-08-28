@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Administration;
 
 use App\Filament\Resources\Administration\ContactResource\Pages;
 use App\Models\Contact;
+use Illuminate\Support\Facades\Auth;
 use BackedEnum;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -29,6 +30,11 @@ class ContactResource extends Resource
     protected static ?string $modelLabel = 'Contacto';
 
     protected static ?string $pluralModelLabel = 'Contactos';
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->hasModuleAccess('contacts') ?? false;
+    }
 
     protected static ?string $navigationLabel = 'Contactos';
 
