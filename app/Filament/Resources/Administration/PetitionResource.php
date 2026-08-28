@@ -54,6 +54,11 @@ class PetitionResource extends Resource
                     ->prefixIcon(Heroicon::OutlinedPhone)
                     ->readOnly(),
 
+                TextInput::make('email')
+                    ->label('Correo Electrónico')
+                    ->prefixIcon(Heroicon::OutlinedEnvelope)
+                    ->readOnly(),
+
                 Textarea::make('petition')
                     ->label('Petición de Oración')
                     ->rows(6)
