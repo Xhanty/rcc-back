@@ -85,6 +85,12 @@ class UserResource extends Resource
                     ->maxLength(255)
                     ->visible(fn(string $operation): bool => $operation === 'create')
                     ->placeholder('Mínimo 8 caracteres'),
+
+                Toggle::make('must_change_password')
+                    ->label('Exigir cambio de contraseña en el primer inicio')
+                    ->helperText('Si está activo, el usuario deberá establecer una nueva contraseña personal al ingresar.')
+                    ->default(true)
+                    ->visible(fn(string $operation): bool => $operation === 'create'),
             ])
             ->columns(1);
     }
@@ -179,10 +185,15 @@ class UserResource extends Resource
                                 ->same('password')
                                 ->required()
                                 ->placeholder('Repite la nueva contraseña'),
+
+                            Toggle::make('must_change_password')
+                                ->label('Exigir cambio de contraseña en el próximo inicio')
+                                ->default(false),
                         ])
                         ->action(function (User $record, array $data): void {
                             $record->update([
                                 'password' => $data['password'],
+                                'must_change_password' => $data['must_change_password'] ?? false,
                             ]);
 
                             Notification::make()

@@ -27,6 +27,7 @@ class User extends Authenticatable
         'password',
         'modules',
         'is_super_admin',
+        'must_change_password',
     ];
 
     /**
@@ -51,6 +52,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'modules' => 'array',
             'is_super_admin' => 'boolean',
+            'must_change_password' => 'boolean',
         ];
     }
 
