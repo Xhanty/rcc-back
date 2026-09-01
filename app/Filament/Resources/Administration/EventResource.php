@@ -78,7 +78,15 @@ class EventResource extends Resource
                                 ->required()
                                 ->maxLength(255)
                                 ->live(onBlur: true)
-                                ->afterStateUpdated(fn(string $operation, ?string $state, Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null)
+                                ->afterStateUpdated(function (string $operation, ?string $state, $set, $get) {
+                                    if ($operation === 'create' && filled($state)) {
+                                        $dateStr = filled($get('start_datetime'))
+                                            ? \Carbon\Carbon::parse($get('start_datetime'))->format('Y-m-d')
+                                            : now()->format('Y-m-d');
+
+                                        $set('slug', Str::slug($state) . '-' . $dateStr);
+                                    }
+                                })
                                 ->placeholder('Ej. Conferencia Anual de Jóvenes'),
 
                             TextInput::make('slug')
@@ -88,7 +96,7 @@ class EventResource extends Resource
                                 ->maxLength(255)
                                 ->unique(ignoreRecord: true)
                                 ->readOnly()
-                                ->placeholder('ej. conferencia-anual-de-jovenes'),
+                                ->placeholder('ej. conferencia-anual-de-jovenes-2026-01-26'),
 
                             Select::make('event_type_id')
                                 ->label('Tipo de Evento')
@@ -167,6 +175,15 @@ class EventResource extends Resource
                                 ->required()
                                 ->native(false)
                                 ->live()
+                                ->afterStateUpdated(function (string $operation, ?string $state, $set, $get) {
+                                    if ($operation === 'create' && filled($get('title'))) {
+                                        $dateStr = filled($state)
+                                            ? \Carbon\Carbon::parse($state)->format('Y-m-d')
+                                            : now()->format('Y-m-d');
+
+                                        $set('slug', Str::slug($get('title')) . '-' . $dateStr);
+                                    }
+                                })
                                 ->placeholder('Selecciona la fecha y hora de inicio'),
 
                             DateTimePicker::make('end_datetime')

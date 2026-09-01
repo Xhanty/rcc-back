@@ -60,7 +60,11 @@ class Event extends Model
     {
         static::creating(function (Event $event): void {
             if (empty($event->slug) && ! empty($event->title)) {
-                $event->slug = Str::slug($event->title);
+                $dateStr = $event->start_datetime
+                    ? $event->start_datetime->format('Y-m-d')
+                    : now()->format('Y-m-d');
+
+                $event->slug = Str::slug($event->title) . '-' . $dateStr;
             }
         });
     }
