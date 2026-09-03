@@ -16,13 +16,11 @@ class EventController extends Controller
 
     public function eventsHome(): JsonResponse
     {
-        $lastDay = Carbon::now()->addDay()->toDateString();
-
         $events = Event::query()
             ->with('eventType')
             ->where('is_featured', true)
             ->where('status', 'published')
-            ->whereDate('start_datetime', '>=', $lastDay)
+            ->whereDate('start_datetime', '>=', Carbon::today())
             ->orderBy('start_datetime', 'ASC')
             ->limit(3)
             ->get();
