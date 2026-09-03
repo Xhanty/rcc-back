@@ -14,7 +14,15 @@ class Assistant extends Model
         'name',
         'email',
         'phone',
+        'birth_date',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'birth_date' => 'date',
+        ];
+    }
 
     // Relación con asistencias
     public function attendances()

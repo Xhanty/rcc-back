@@ -16,6 +16,7 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
 use Filament\Actions\Action;
 use Filament\Schemas\Schema;
@@ -55,7 +56,7 @@ class AssistantResource extends Resource
         return $schema
             ->components([
                 TextInput::make('document')
-                    ->label('Documento de Identidad / Cédula')
+                    ->label('Documento')
                     ->prefixIcon(Heroicon::OutlinedIdentification)
                     ->required()
                     ->maxLength(255)
@@ -83,6 +84,15 @@ class AssistantResource extends Resource
                     ->tel()
                     ->maxLength(30)
                     ->placeholder('Ej. +57 300 123 4567'),
+
+                DatePicker::make('birth_date')
+                    ->label('Fecha de Nacimiento')
+                    ->prefixIcon(Heroicon::OutlinedCake)
+                    ->native(false)
+                    ->displayFormat('d/m/Y')
+                    ->maxDate(now())
+                    ->required()
+                    ->placeholder('Selecciona la fecha de nacimiento'),
             ])
             ->columns(1);
     }
@@ -92,14 +102,14 @@ class AssistantResource extends Resource
         return $table
             ->defaultSort('created_at', 'desc')
             ->striped()
-            ->searchPlaceholder('Buscar por cédula, nombre o correo...')
+            ->searchPlaceholder('Buscar por documento, nombre o correo...')
             ->searchDebounce('500ms')
             ->emptyStateHeading('No hay asistentes registrados')
             ->emptyStateDescription('Crea un nuevo asistente para comenzar a registrar su participación en eventos.')
             ->emptyStateIcon(Heroicon::OutlinedIdentification)
             ->columns([
                 TextColumn::make('document')
-                    ->label('Cédula / Documento')
+                    ->label('Documento')
                     ->searchable()
                     ->sortable()
                     ->copyable()
@@ -122,6 +132,12 @@ class AssistantResource extends Resource
                 TextColumn::make('phone')
                     ->label('Teléfono')
                     ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+
+                TextColumn::make('birth_date')
+                    ->label('Fecha de Nacimiento')
+                    ->date('d/m/Y')
                     ->sortable()
                     ->toggleable(),
 
@@ -162,7 +178,7 @@ class AssistantResource extends Resource
                         ->label('Ver Eventos Asistidos')
                         ->icon(Heroicon::OutlinedCalendar)
                         ->color('success')
-                        ->url(fn (Assistant $record): string => static::getUrl('events', ['record' => $record])),
+                        ->url(fn(Assistant $record): string => static::getUrl('events', ['record' => $record])),
 
                     DeleteAction::make()
                         ->label('Eliminar')

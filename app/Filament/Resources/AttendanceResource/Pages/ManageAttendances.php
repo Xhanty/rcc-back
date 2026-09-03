@@ -35,6 +35,7 @@ class ManageAttendances extends Page implements HasTable
     // Registration Form Fields
     public string $newAssistantDocument = '';
     public string $newAssistantName = '';
+    public ?string $newAssistantBirthDate = '';
     public string $newAssistantEmail = '';
     public ?string $newAssistantPhone = '';
 
@@ -91,6 +92,7 @@ class ManageAttendances extends Page implements HasTable
             $this->hasAttended = false;
             $this->newAssistantDocument = $value;
             $this->newAssistantName = '';
+            $this->newAssistantBirthDate = '';
             $this->newAssistantEmail = '';
             $this->newAssistantPhone = '';
         }
@@ -128,12 +130,16 @@ class ManageAttendances extends Page implements HasTable
         $this->validate([
             'newAssistantDocument' => 'required|string|max:255|unique:assistants,document',
             'newAssistantName' => 'required|string|max:255',
+            'newAssistantBirthDate' => 'required|date|before_or_equal:today',
             'newAssistantEmail' => 'nullable|email|max:255|unique:assistants,email',
             'newAssistantPhone' => 'nullable|string|max:30',
         ], [
             'newAssistantDocument.unique' => 'Esta cédula ya está registrada.',
             'newAssistantEmail.unique' => 'Este correo electrónico ya está registrado.',
             'newAssistantName.required' => 'El nombre completo es obligatorio.',
+            'newAssistantBirthDate.required' => 'La fecha de nacimiento es obligatoria.',
+            'newAssistantBirthDate.date' => 'La fecha de nacimiento no es válida.',
+            'newAssistantBirthDate.before_or_equal' => 'La fecha de nacimiento no puede ser una fecha futura.',
         ]);
 
         $email = trim($this->newAssistantEmail);
@@ -144,6 +150,7 @@ class ManageAttendances extends Page implements HasTable
             'name' => $this->newAssistantName,
             'email' => $email,
             'phone' => $this->newAssistantPhone,
+            'birth_date' => $this->newAssistantBirthDate,
         ]);
 
         Attendance::create([
@@ -174,6 +181,7 @@ class ManageAttendances extends Page implements HasTable
         
         $this->newAssistantDocument = '';
         $this->newAssistantName = '';
+        $this->newAssistantBirthDate = '';
         $this->newAssistantEmail = '';
         $this->newAssistantPhone = '';
     }
@@ -209,6 +217,11 @@ class ManageAttendances extends Page implements HasTable
                 TextColumn::make('assistant.email')
                     ->label('Correo Electrónico')
                     ->searchable(),
+
+                TextColumn::make('assistant.birth_date')
+                    ->label('Fecha de Nacimiento')
+                    ->date('d/m/Y')
+                    ->sortable(),
 
                 TextColumn::make('created_at')
                     ->label('Hora de Registro')

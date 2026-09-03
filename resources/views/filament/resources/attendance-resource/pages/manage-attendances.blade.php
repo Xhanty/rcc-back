@@ -190,10 +190,11 @@
                                             <div style="display: flex; flex-direction: column; gap: 0.375rem; font-size: 0.875rem;">
                                                 <div style="font-weight: 700;">{{ $searchedAssistant->name }}</div>
                                                 <div style="font-size: 0.75rem; opacity: 0.7;">Cédula: {{ $searchedAssistant->document }}</div>
-                                                <div style="font-size: 0.75rem; opacity: 0.7;">Correo: {{ $searchedAssistant->email }}</div>
+                                                <div style="font-size: 0.75rem; opacity: 0.7;">Correo: {{ $searchedAssistant->email ?? 'No registrado' }}</div>
                                                 @if($searchedAssistant->phone)
                                                     <div style="font-size: 0.75rem; opacity: 0.7;">Teléfono: {{ $searchedAssistant->phone }}</div>
                                                 @endif
+                                                <div style="font-size: 0.75rem; opacity: 0.7;">Fecha de Nacimiento: {{ $searchedAssistant->birth_date ? \Carbon\Carbon::parse($searchedAssistant->birth_date)->format('d/m/Y') : 'No registrada' }}</div>
                                             </div>
                                         </div>
 
@@ -290,6 +291,21 @@
                                                     />
                                                 </x-filament::input.wrapper>
                                                 @error('newAssistantPhone')
+                                                    <span style="font-size: 0.75rem; color: red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <label style="font-size: 0.75rem; font-weight: 600; opacity: 0.8;">Fecha de Nacimiento <span style="color: red;">*</span></label>
+                                                <x-filament::input.wrapper :valid="!$errors->has('newAssistantBirthDate')">
+                                                    <x-filament::input
+                                                        type="date"
+                                                        wire:model="newAssistantBirthDate"
+                                                        max="{{ date('Y-m-d') }}"
+                                                        required
+                                                    />
+                                                </x-filament::input.wrapper>
+                                                @error('newAssistantBirthDate')
                                                     <span style="font-size: 0.75rem; color: red;">{{ $message }}</span>
                                                 @enderror
                                             </div>
