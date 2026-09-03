@@ -16,11 +16,13 @@ class EventController extends Controller
 
     public function eventsHome(): JsonResponse
     {
+        $lastDay = Carbon::now()->addDay()->toDateString();
+
         $events = Event::query()
             ->with('eventType')
             ->where('is_featured', true)
             ->where('status', 'published')
-            ->whereDate('start_datetime', '>=', Carbon::now()->toDateString())
+            ->whereDate('start_datetime', '>=', $lastDay)
             ->orderBy('start_datetime', 'ASC')
             ->limit(3)
             ->get();
@@ -67,7 +69,7 @@ class EventController extends Controller
             ->with('eventType')
             ->whereYear('start_datetime', $year)
             ->whereMonth('start_datetime', $month)
-            ->where('status', 'published')
+            ->whereIn('status', ['published', 'completed'])
             ->orderBy('start_datetime', 'ASC')
             ->get();
 
@@ -80,7 +82,7 @@ class EventController extends Controller
     {
         $rawData = Event::query()
             ->selectRaw('YEAR(start_datetime) as year, MONTH(start_datetime) as month')
-            ->where('status', 'published')
+            ->whereIn('status', ['published', 'completed'])
             ->groupBy('year', 'month')
             ->orderBy('year', 'DESC')
             ->orderBy('month', 'DESC')
