@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
+use Filament\Support\Enums\Width;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 use Filament\Widgets\ChartWidget\Concerns\HasFiltersSchema;
@@ -28,6 +29,8 @@ class EventAttendeesChart extends ApexChartWidget
     protected static ?string $subheading = 'Cantidad de asistentes registrados';
 
     protected int|string|array $columnSpan = 1;
+
+    protected static Width|string $filterFormWidth = Width::Medium;
 
     public function filtersSchema(Schema $schema): Schema
     {

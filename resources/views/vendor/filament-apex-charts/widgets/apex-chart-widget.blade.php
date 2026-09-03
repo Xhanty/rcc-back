@@ -17,17 +17,19 @@
     $extraJsOptions = $this->extraJsOptions();
 @endphp
 
-<x-filament-widgets::widget class="fi-wi-chart filament-widgets-chart-widget filament-apex-charts-widget">
+<x-filament-widgets::widget
+    class="fi-wi-chart filament-widgets-chart-widget filament-apex-charts-widget"
+    x-data="{ showFilters: false }"
+>
     <x-filament::section
         class="filament-apex-charts-section"
         :description="$subheading"
         :heading="$heading"
         :collapsible="$isCollapsible"
     >
-        <div x-data="{ dropdownOpen: false }" @apexhcharts-dropdown.window="dropdownOpen = $event.detail.open">
-
-            @if ($filters || method_exists($this, 'getFiltersSchema'))
-                <x-slot name="afterHeader">
+        @if ($filters || method_exists($this, 'getFiltersSchema'))
+            <x-slot name="afterHeader">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
                     @if ($filters)
                         <x-filament::input.wrapper
                             inline-prefix
@@ -48,32 +50,37 @@
                     @endif
 
                     @if (method_exists($this, 'getFiltersSchema'))
-                        <x-filament::dropdown
-                            placement="bottom-end"
-                            shift
-                            :width="$width"
-                            class="fi-wi-chart-filter"
-                        >
-                            <x-slot name="trigger">
-                                {{ $this->getFiltersTriggerAction() }}
-                            </x-slot>
-
-                            <div class="fi-wi-chart-filter-content">
-                                {{ $this->getFiltersSchema() }}
-                            </div>
-                        </x-filament::dropdown>
+                        <x-filament::icon-button
+                            icon="heroicon-o-funnel"
+                            color="gray"
+                            x-on:click="showFilters = !showFilters"
+                            x-bind:class="{ 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/50': showFilters }"
+                            label="Filtros"
+                            tooltip="Filtros"
+                        />
                     @endif
-                </x-slot>
-            @endif
-
-            <x-filament-apex-charts::chart :$chartId :$chartOptions :$contentHeight :$pollingInterval :$loadingIndicator
-                :$darkMode :$deferLoading :$readyToLoad :$extraJsOptions />
-
-            @if ($footer)
-                <div class="relative">
-                    {!! $footer !!}
                 </div>
-            @endif
-        </div>
+            </x-slot>
+        @endif
+
+        @if (method_exists($this, 'getFiltersSchema'))
+            <div
+                x-show="showFilters"
+                x-collapse
+                class="mb-4 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10"
+                style="display: none;"
+            >
+                {{ $this->getFiltersSchema() }}
+            </div>
+        @endif
+
+        <x-filament-apex-charts::chart :$chartId :$chartOptions :$contentHeight :$pollingInterval :$loadingIndicator
+            :$darkMode :$deferLoading :$readyToLoad :$extraJsOptions />
+
+        @if ($footer)
+            <div class="relative">
+                {!! $footer !!}
+            </div>
+        @endif
     </x-filament::section>
 </x-filament-widgets::widget>

@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Models\Contact;
 use App\Models\Petition;
 use Illuminate\Support\Facades\Auth;
+use Filament\Support\Enums\Width;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 use Filament\Widgets\ChartWidget\Concerns\HasFiltersSchema;
@@ -25,6 +26,8 @@ class ContactsChart extends ApexChartWidget
     protected static ?string $chartId = 'contactsChart';
 
     protected int|string|array $columnSpan = 1;
+
+    protected static Width|string $filterFormWidth = Width::Small;
 
     public function getHeading(): string
     {
