@@ -15,7 +15,7 @@ class BirthdaysReportWidget extends TableWidget
 {
     public static function canView(): bool
     {
-        return Auth::user()?->hasModuleAccess('assistants') ?? false;
+        return false;
     }
 
     protected static ?int $sort = 5;

@@ -7,10 +7,13 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\NavigationItem;
+use Filament\View\PanelsRenderHook;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\Width;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -47,14 +50,37 @@ class AdminPanelProvider extends PanelProvider
             '))
             ->brandLogoHeight('2.25rem')
             ->favicon(asset('icon.png'))
+            ->globalSearch(false)
+            ->maxContentWidth(Width::Full)
+            ->sidebarFullyCollapsibleOnDesktop()
             ->navigationGroups([
                 NavigationGroup::make('Administración'),
                 NavigationGroup::make('Configuración'),
             ])
+            ->navigationItems([
+                NavigationItem::make('Ministerios')
+                    ->group('Administración')
+                    ->icon('heroicon-o-user-group')
+                    ->sort(8)
+                    ->url('#'),
+                NavigationItem::make('Banners')
+                    ->group('Administración')
+                    ->icon('heroicon-o-photo')
+                    ->sort(9)
+                    ->url('#'),
+            ])
+            ->renderHook(
+                PanelsRenderHook::USER_MENU_BEFORE,
+                fn () => view('filament.components.notification-bell')
+            )
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn () => new \Illuminate\Support\HtmlString('<style>.rcc-event-wizard .fi-sc-wizard-footer { display: none !important; }</style>')
+            )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Dashboard::class,
+                \App\Filament\Pages\Dashboard::class,
                 \App\Filament\Pages\ForcePasswordChange::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')

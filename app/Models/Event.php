@@ -14,6 +14,7 @@ class Event extends Model
 
     protected $fillable = [
         'event_type_id',
+        'prayer_id',
         'title',
         'slug',
         'short_description',
@@ -54,6 +55,24 @@ class Event extends Model
     public function assistants()
     {
         return $this->belongsToMany(Assistant::class, 'attendances');
+    }
+
+    // Oración principal asociada al evento
+    public function prayer()
+    {
+        return $this->belongsTo(Prayer::class, 'prayer_id');
+    }
+
+    // Oraciones asociadas al evento
+    public function prayers()
+    {
+        return $this->hasMany(Prayer::class, 'event_id');
+    }
+
+    // Canciones asociadas al evento
+    public function songs()
+    {
+        return $this->belongsToMany(Song::class, 'event_song')->withTimestamps();
     }
 
     protected static function booted(): void

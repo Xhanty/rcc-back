@@ -19,15 +19,6 @@ class EditEvent extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [
-            DeleteAction::make()
-                ->label('Eliminar')
-                ->color('danger'),
-            ForceDeleteAction::make()
-                ->label('Eliminar permanentemente'),
-            RestoreAction::make()
-                ->label('Restaurar')
-                ->color('success'),
-        ];
+        return [];
     }
 }

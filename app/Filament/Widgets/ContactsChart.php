@@ -17,8 +17,7 @@ class ContactsChart extends ApexChartWidget
 
     public static function canView(): bool
     {
-        $user = Auth::user();
-        return $user?->hasModuleAccess('contacts') || $user?->hasModuleAccess('petitions') ?: false;
+        return false;
     }
 
     protected static ?int $sort = 3;

@@ -128,6 +128,30 @@ class EventResource extends Resource
                                 ->visibility('public')
                                 ->directory('events/banners')
                                 ->columnSpanFull(),
+
+                            Select::make('prayer_id')
+                                ->label('Oración del Evento')
+                                ->relationship(
+                                    name: 'prayer',
+                                    titleAttribute: 'title',
+                                    modifyQueryUsing: fn(Builder $query) => $query->where('type', 'oracion')
+                                )
+                                ->searchable()
+                                ->preload()
+                                ->nullable()
+                                ->prefixIcon(Heroicon::OutlinedBookOpen)
+                                ->helperText('Opcional. Selecciona una oración para este evento.')
+                                ->placeholder('Selecciona una oración'),
+
+                            Select::make('songs')
+                                ->label('Canciones del Evento')
+                                ->relationship('songs', 'title')
+                                ->multiple()
+                                ->searchable()
+                                ->preload()
+                                ->prefixIcon(Heroicon::OutlinedMusicalNote)
+                                ->helperText('Opcional. Selecciona una o más canciones del repertorio para este evento.')
+                                ->placeholder('Selecciona canciones'),
                         ]),
 
                     Step::make('Modalidad y Ubicación')
@@ -209,6 +233,8 @@ class EventResource extends Resource
                                 ->default(false),
                         ]),
                 ])
+                    ->skippable()
+                    ->extraAttributes(['class' => 'rcc-event-wizard [&_.fi-sc-wizard-footer]:!hidden'])
                     ->columnSpanFull()
             ])
             ->columns(1);

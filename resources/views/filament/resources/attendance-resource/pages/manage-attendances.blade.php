@@ -162,30 +162,130 @@
                     
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
                         <p style="font-size: 0.75rem; opacity: 0.7; text-align: center;">
-                            Ingresa el número de documento del asistente para buscarlo o registrarlo en el sistema.
+                            Ingresa el número de cédula o nombre del asistente para buscarlo o registrarlo en el sistema.
                         </p>
 
                         <x-filament::input.wrapper>
                             <x-slot name="prefix">
-                                <x-filament::icon icon="heroicon-o-identification" style="height: 1.25rem; width: 1.25rem; opacity: 0.5;" />
+                                <x-filament::icon icon="heroicon-o-magnifying-glass" style="height: 1.25rem; width: 1.25rem; opacity: 0.5;" />
                             </x-slot>
                             <x-filament::input
                                 type="text"
-                                wire:model.live.debounce.500ms="searchDocument"
-                                placeholder="Cédula / Documento de identidad..."
+                                wire:model.live.debounce.400ms="searchDocument"
+                                placeholder="Escribe cédula o nombre..."
                                 autofocus
                             />
+                            @if(!empty($searchDocument))
+                                <x-slot name="suffix">
+                                    <button 
+                                        type="button" 
+                                        wire:click="cancelSearch" 
+                                        style="border: none; background: transparent; cursor: pointer; display: flex; align-items: center; opacity: 0.6;"
+                                        title="Limpiar búsqueda"
+                                    >
+                                        <x-filament::icon icon="heroicon-m-x-mark" style="height: 1.125rem; width: 1.125rem;" />
+                                    </button>
+                                </x-slot>
+                            @endif
                         </x-filament::input.wrapper>
 
                         @if(!empty($searchDocument))
                             <div style="border-top: 1px solid rgba(156,163,175,0.15); padding-top: 1rem; margin-top: 0.5rem; text-align: left;">
-                                @if($assistantExists && $searchedAssistant)
+                                @if($isSearchingByName && empty($searchedAssistant))
+                                    {{-- RESULTADOS DE BÚSQUEDA POR NOMBRE / APELLIDO --}}
+                                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 0.25rem;">
+                                            <span style="font-size: 0.75rem; font-weight: 600; opacity: 0.7;">
+                                                Coincidencias encontradas ({{ count($nameSearchResults) }})
+                                            </span>
+                                            <button 
+                                                type="button" 
+                                                wire:click="cancelSearch" 
+                                                style="font-size: 0.75rem; color: #ef4444; background: none; border: none; cursor: pointer; text-decoration: underline;"
+                                            >
+                                                Limpiar
+                                            </button>
+                                        </div>
+
+                                        @if(!empty($nameSearchResults))
+                                            <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 18rem; overflow-y: auto; padding-right: 0.25rem;">
+                                                @foreach($nameSearchResults as $result)
+                                                    <div 
+                                                        wire:key="assistant-result-{{ $result['id'] }}"
+                                                        wire:click="selectAssistant({{ $result['id'] }})"
+                                                        style="cursor: pointer; padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(156,163,175,0.2); background-color: rgba(156,163,175,0.05); display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; transition: all 0.15s ease;"
+                                                        onmouseover="this.style.borderColor='rgba(245,158,11,0.6)'; this.style.backgroundColor='rgba(245,158,11,0.08)';"
+                                                        onmouseout="this.style.borderColor='rgba(156,163,175,0.2)'; this.style.backgroundColor='rgba(156,163,175,0.05)';"
+                                                    >
+                                                        <div style="display: flex; flex-direction: column; gap: 0.2rem; min-width: 0;">
+                                                            <div style="font-weight: 700; font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                                {{ $result['name'] }}
+                                                            </div>
+                                                            <div style="font-size: 0.75rem; opacity: 0.7; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                                                <span>Cédula: <strong>{{ $result['document'] }}</strong></span>
+                                                                @if(!empty($result['phone']))
+                                                                    <span>• Tel: {{ $result['phone'] }}</span>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+
+                                                        <div style="flex-shrink: 0;">
+                                                            @if($result['has_attended'])
+                                                                <x-filament::badge color="warning" size="sm">
+                                                                    Ya asistió
+                                                                </x-filament::badge>
+                                                            @else
+                                                                <x-filament::badge color="primary" size="sm">
+                                                                    Seleccionar
+                                                                </x-filament::badge>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            <p style="font-size: 0.75rem; opacity: 0.6; text-align: center; margin-top: 0.25rem;">
+                                                Haz clic en un asistente para seleccionarlo y confirmar su asistencia.
+                                            </p>
+                                        @else
+                                            <div style="padding: 1.5rem 1rem; text-align: center; background-color: rgba(156,163,175,0.05); border: 1px dashed rgba(156,163,175,0.25); border-radius: 0.5rem;">
+                                                <x-filament::icon icon="heroicon-o-user-minus" style="height: 2rem; width: 2rem; margin: 0 auto 0.5rem auto; opacity: 0.4;" />
+                                                <div style="font-size: 0.875rem; font-weight: 600;">No se encontraron resultados</div>
+                                                <div style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.25rem;">
+                                                    No hay ningún asistente registrado con el nombre "<strong>{{ $searchDocument }}</strong>".
+                                                </div>
+                                                <div style="margin-top: 0.75rem;">
+                                                    <x-filament::button
+                                                        type="button"
+                                                        wire:click="cancelSearch"
+                                                        color="gray"
+                                                        size="sm"
+                                                    >
+                                                        Limpiar búsqueda
+                                                    </x-filament::button>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @elseif($assistantExists && $searchedAssistant)
                                     {{-- PREVIEW ASSISTANT --}}
                                     <div style="display: flex; flex-direction: column; gap: 1rem;">
                                         <div style="padding: 1rem; background-color: rgba(156,163,175,0.05); border: 1px solid rgba(156,163,175,0.15); border-radius: 0.5rem;">
                                             <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(156,163,175,0.15); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                                                <span style="font-size: 0.75rem; font-weight: 600; opacity: 0.6;">Asistente Encontrado</span>
-                                                <x-filament::badge color="success" size="sm">Activo</x-filament::badge>
+                                                <span style="font-size: 0.75rem; font-weight: 600; opacity: 0.6;">
+                                                    {{ $isSearchingByName ? 'Asistente Seleccionado' : 'Asistente Encontrado' }}
+                                                </span>
+                                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                                    @if($isSearchingByName)
+                                                        <button
+                                                            type="button"
+                                                            wire:click="reOpenNameResults"
+                                                            style="font-size: 0.75rem; color: #d97706; background: none; border: none; cursor: pointer; text-decoration: underline;"
+                                                        >
+                                                            Cambiar
+                                                        </button>
+                                                    @endif
+                                                    <x-filament::badge color="success" size="sm">Activo</x-filament::badge>
+                                                </div>
                                             </div>
                                             <div style="display: flex; flex-direction: column; gap: 0.375rem; font-size: 0.875rem;">
                                                 <div style="font-weight: 700;">{{ $searchedAssistant->name }}</div>

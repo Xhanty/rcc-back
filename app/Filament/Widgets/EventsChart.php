@@ -21,7 +21,7 @@ class EventsChart extends ApexChartWidget
         return Auth::user()?->hasModuleAccess('events') ?? false;
     }
 
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 2;
 
     protected static ?string $chartId = 'eventsChart';
 
@@ -29,7 +29,12 @@ class EventsChart extends ApexChartWidget
 
     protected static ?string $subheading = 'Cantidad de eventos registrados por modalidad y mes';
 
-    protected int|string|array $columnSpan = 'full';
+    protected int|string|array $columnSpan = [
+        'default' => 'full',
+        'md' => 2,
+        'lg' => 2,
+        'xl' => 2,
+    ];
 
     protected static Width|string $filterFormWidth = Width::ThreeExtraLarge;
 
@@ -172,7 +177,7 @@ class EventsChart extends ApexChartWidget
         return [
             'chart' => [
                 'type' => 'bar',
-                'height' => 320,
+                'height' => 360,
                 'parentHeightOffset' => 0,
                 'toolbar' => [
                     'show' => false,

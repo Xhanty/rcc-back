@@ -13,6 +13,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 
 class ManageAttendances extends Page implements HasTable
 {
@@ -31,6 +32,8 @@ class ManageAttendances extends Page implements HasTable
     public bool $assistantExists = false;
     public bool $showRegisterForm = false;
     public bool $hasAttended = false;
+    public bool $isSearchingByName = false;
+    public array $nameSearchResults = [];
 
     // Registration Form Fields
     public string $newAssistantDocument = '';
@@ -76,26 +79,84 @@ class ManageAttendances extends Page implements HasTable
             return;
         }
 
-        $assistant = Assistant::where('document', $value)->first();
+        // Determinar si la búsqueda es numérica (cédula/documento) o de texto (nombre/apellido)
+        $isNumeric = preg_match('/^[0-9]+$/', str_replace(['.', '-', ' '], '', $value));
 
-        if ($assistant) {
-            $this->searchedAssistant = $assistant;
-            $this->assistantExists = true;
-            $this->showRegisterForm = false;
-            $this->hasAttended = Attendance::where('event_id', $this->selectedEventId)
-                ->where('assistant_id', $assistant->id)
-                ->exists();
+        if ($isNumeric) {
+            $this->isSearchingByName = false;
+            $this->nameSearchResults = [];
+
+            $assistant = Assistant::where('document', $value)->first();
+
+            if ($assistant) {
+                $this->setFoundAssistant($assistant);
+            } else {
+                $this->searchedAssistant = null;
+                $this->assistantExists = false;
+                $this->showRegisterForm = true;
+                $this->hasAttended = false;
+                $this->newAssistantDocument = $value;
+                $this->newAssistantName = '';
+                $this->newAssistantBirthDate = '';
+                $this->newAssistantEmail = '';
+                $this->newAssistantPhone = '';
+            }
         } else {
+            // Búsqueda por texto (nombre o apellido)
+            $this->isSearchingByName = true;
             $this->searchedAssistant = null;
             $this->assistantExists = false;
-            $this->showRegisterForm = true;
+            $this->showRegisterForm = false;
             $this->hasAttended = false;
-            $this->newAssistantDocument = $value;
-            $this->newAssistantName = '';
-            $this->newAssistantBirthDate = '';
-            $this->newAssistantEmail = '';
-            $this->newAssistantPhone = '';
+
+            $assistants = Assistant::query()
+                ->where('name', 'like', '%' . $value . '%')
+                ->orderBy('name')
+                ->limit(10)
+                ->get();
+
+            $this->nameSearchResults = $assistants->map(function ($ast) {
+                $alreadyAttended = Attendance::where('event_id', $this->selectedEventId)
+                    ->where('assistant_id', $ast->id)
+                    ->exists();
+
+                return [
+                    'id' => $ast->id,
+                    'name' => $ast->name,
+                    'document' => $ast->document,
+                    'phone' => $ast->phone,
+                    'birth_date' => $ast->birth_date ? \Carbon\Carbon::parse($ast->birth_date)->format('d/m/Y') : null,
+                    'has_attended' => $alreadyAttended,
+                ];
+            })->toArray();
         }
+    }
+
+    public function selectAssistant(int $assistantId): void
+    {
+        $assistant = Assistant::find($assistantId);
+        if ($assistant) {
+            $this->setFoundAssistant($assistant);
+            $this->nameSearchResults = [];
+        }
+    }
+
+    public function reOpenNameResults(): void
+    {
+        $this->searchedAssistant = null;
+        $this->assistantExists = false;
+        $this->hasAttended = false;
+        $this->updatedSearchDocument($this->searchDocument);
+    }
+
+    protected function setFoundAssistant(Assistant $assistant): void
+    {
+        $this->searchedAssistant = $assistant;
+        $this->assistantExists = true;
+        $this->showRegisterForm = false;
+        $this->hasAttended = Attendance::where('event_id', $this->selectedEventId)
+            ->where('assistant_id', $assistant->id)
+            ->exists();
     }
 
     public function markAttendance(): void
@@ -178,6 +239,8 @@ class ManageAttendances extends Page implements HasTable
         $this->assistantExists = false;
         $this->showRegisterForm = false;
         $this->hasAttended = false;
+        $this->isSearchingByName = false;
+        $this->nameSearchResults = [];
         
         $this->newAssistantDocument = '';
         $this->newAssistantName = '';
@@ -214,21 +277,22 @@ class ManageAttendances extends Page implements HasTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('assistant.email')
-                    ->label('Correo Electrónico')
-                    ->searchable(),
-
-                TextColumn::make('assistant.birth_date')
-                    ->label('Fecha de Nacimiento')
-                    ->date('d/m/Y')
-                    ->sortable(),
-
                 TextColumn::make('created_at')
                     ->label('Hora de Registro')
                     ->dateTime('d/m/Y H:i:s')
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
+            ->actions([
+                DeleteAction::make()
+                    ->label('Eliminar')
+                    ->tooltip('Eliminar asistencia de este evento')
+                    ->modalHeading('Eliminar Asistencia')
+                    ->modalDescription('¿Estás seguro que deseas eliminar este resucitado del evento?')
+                    ->modalSubmitActionLabel('Sí, eliminar')
+                    ->successNotificationTitle('Asistencia eliminada correctamente')
+                    ->after(fn () => $this->resetSearch()),
+            ])
             ->headerActions([
                 Action::make('refresh')
                     ->label('Refrescar')

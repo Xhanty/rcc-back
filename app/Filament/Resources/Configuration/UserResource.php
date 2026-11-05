@@ -225,6 +225,8 @@ class UserResource extends Resource
                                 ->options([
                                     'events' => 'Eventos',
                                     'event_types' => 'Tipos de Eventos',
+                                    'prayers' => 'Oraciones y Novenas',
+                                    'songs' => 'Canciones',
                                     'assistants' => 'Asistentes (CRUD)',
                                     'attendance' => 'Asistencia (Registro Rápido)',
                                     'contacts' => 'Mensajes de Contacto',

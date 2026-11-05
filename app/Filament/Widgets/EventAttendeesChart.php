@@ -20,15 +20,20 @@ class EventAttendeesChart extends ApexChartWidget
         return $user?->hasModuleAccess('events') || $user?->hasModuleAccess('attendance') ?: false;
     }
 
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 3;
 
     protected static ?string $chartId = 'eventAttendeesChart';
 
     protected static ?string $heading = 'Asistencia por Evento';
 
-    protected static ?string $subheading = 'Cantidad de asistentes registrados';
+    protected static ?string $subheading = 'Top eventos con mayor convocatoria';
 
-    protected int|string|array $columnSpan = 1;
+    protected int|string|array $columnSpan = [
+        'default' => 'full',
+        'md' => 1,
+        'lg' => 1,
+        'xl' => 1,
+    ];
 
     protected static Width|string $filterFormWidth = Width::Medium;
 
@@ -112,17 +117,18 @@ class EventAttendeesChart extends ApexChartWidget
             ->whereYear('start_datetime', $year)
             ->whereMonth('start_datetime', $month)
             ->withCount('attendances')
-            ->orderBy('start_datetime', 'DESC')
-            ->get()
-            ->reverse();
+            ->orderBy('attendances_count', 'asc')
+            ->limit(7)
+            ->get();
 
-        $categories = $events->pluck('title')->toArray();
+        $categories = $events->pluck('title')->map(fn ($title) => \Illuminate\Support\Str::limit($title, 22))->toArray();
         $data = $events->pluck('attendances_count')->toArray();
 
         return [
             'chart' => [
                 'type' => 'bar',
-                'height' => 380,
+                'height' => 360,
+                'parentHeightOffset' => 0,
                 'toolbar' => [
                     'show' => false,
                 ],
