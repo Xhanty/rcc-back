@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Configuration;
 
+use App\Filament\Concerns\HasModulePermissions;
 use App\Filament\Resources\Configuration\UserResource\Pages;
+use App\Models\Assistant;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use BackedEnum;
@@ -22,6 +24,10 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -34,22 +40,24 @@ use UnitEnum;
 
 class UserResource extends Resource
 {
+    use HasModulePermissions;
+
     protected static ?string $model = User::class;
 
     protected static ?string $modelLabel = 'Usuario';
 
     protected static ?string $pluralModelLabel = 'Usuarios';
 
-    public static function canViewAny(): bool
+    protected static function getPermissionModule(): string
     {
-        return Auth::user()?->hasModuleAccess('users') ?? false;
+        return 'users';
     }
 
     protected static ?string $navigationLabel = 'Usuarios';
 
     protected static string|UnitEnum|null $navigationGroup = 'Configuración';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
@@ -59,13 +67,6 @@ class UserResource extends Resource
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->label('Nombre Completo')
-                    ->prefixIcon(Heroicon::OutlinedUser)
-                    ->required()
-                    ->maxLength(255)
-                    ->placeholder('Ej. Juan Pérez'),
-
                 TextInput::make('email')
                     ->label('Correo Electrónico')
                     ->prefixIcon(Heroicon::OutlinedEnvelope)
@@ -73,7 +74,47 @@ class UserResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true)
-                    ->placeholder('ejemplo@correo.com'),
+                    ->placeholder('Pega el correo para autocompletar desde Asistentes...')
+                    ->live(debounce: 300)
+                    ->afterStateUpdated(function (?string $state, Get $get, Set $set): void {
+                        $email = strtolower(trim((string) $state));
+                        if ($email === '') {
+                            return;
+                        }
+
+                        $assistant = Assistant::query()
+                            ->whereRaw('LOWER(email) = ?', [$email])
+                            ->first();
+
+                        if ($assistant && filled($assistant->name)) {
+                            $set('name', $assistant->name);
+                        }
+
+                        if (blank($get('password'))) {
+                            $set('password', '12345678');
+                        }
+                    })
+                    ->helperText(function (?string $state): ?string {
+                        $email = strtolower(trim((string) $state));
+                        if ($email === '') {
+                            return 'Si el correo existe en Asistentes, se autocompletará el nombre.';
+                        }
+
+                        $assistant = Assistant::query()
+                            ->whereRaw('LOWER(email) = ?', [$email])
+                            ->first();
+
+                        return $assistant
+                            ? "✅ Asistente encontrado: {$assistant->name}"
+                            : null;
+                    }),
+
+                TextInput::make('name')
+                    ->label('Nombre Completo')
+                    ->prefixIcon(Heroicon::OutlinedUser)
+                    ->required()
+                    ->maxLength(255)
+                    ->placeholder('Ej. Juan Pérez'),
 
                 TextInput::make('password')
                     ->label('Contraseña')
@@ -81,16 +122,12 @@ class UserResource extends Resource
                     ->password()
                     ->revealable()
                     ->required()
+                    ->default('12345678')
                     ->minLength(8)
                     ->maxLength(255)
                     ->visible(fn(string $operation): bool => $operation === 'create')
-                    ->placeholder('Mínimo 8 caracteres'),
-
-                Toggle::make('must_change_password')
-                    ->label('Exigir cambio de contraseña en el primer inicio')
-                    ->helperText('Si está activo, el usuario deberá establecer una nueva contraseña personal al ingresar.')
-                    ->default(true)
-                    ->visible(fn(string $operation): bool => $operation === 'create'),
+                    ->placeholder('Mínimo 8 caracteres')
+                    ->helperText('El usuario deberá cambiar obligatoriamente esta contraseña en su primer inicio de sesión.'),
             ])
             ->columns(1);
     }
@@ -203,47 +240,129 @@ class UserResource extends Resource
                         }),
 
                     Action::make('assignModules')
-                        ->label('Asignar módulos')
+                        ->label('Asignar permisos')
                         ->icon(Heroicon::OutlinedShieldCheck)
                         ->color('success')
-                        ->modalHeading('Asignar Módulos y Permisos')
-                        ->modalDescription('Configura el rol de Administrador Maestro o los módulos específicos para este usuario.')
-                        ->modalSubmitActionLabel('Guardar')
+                        ->visible(fn (): bool => Auth::user()?->hasPermission('users', 'edit') ?? false)
+                        ->modalHeading('Asignar Módulos y Subpermisos')
+                        ->modalDescription('Configura el rol de Administrador Maestro o elige exactamente qué acciones (botones) puede realizar este usuario en cada módulo.')
+                        ->modalSubmitActionLabel('Guardar permisos')
                         ->modalCancelActionLabel('Cancelar')
-                        ->modalWidth('md')
-                        ->fillForm(fn(User $record): array => [
-                            'is_super_admin' => $record->is_super_admin,
-                            'modules' => $record->modules,
-                        ])
-                        ->form([
-                            Toggle::make('is_super_admin')
-                                ->label('Administrador Maestro (Acceso Total)')
-                                ->live(),
+                        ->modalWidth('4xl')
+                        ->fillForm(function (User $record): array {
+                            $effective = $record->is_super_admin ? [] : $record->getEffectivePermissions();
+                            $enabledModules = [];
 
-                            CheckboxList::make('modules')
-                                ->label('Módulos Asignados')
-                                ->options([
-                                    'events' => 'Eventos',
-                                    'event_types' => 'Tipos de Eventos',
-                                    'prayers' => 'Oraciones y Novenas',
-                                    'songs' => 'Canciones',
-                                    'assistants' => 'Asistentes (CRUD)',
-                                    'attendance' => 'Asistencia (Registro Rápido)',
-                                    'contacts' => 'Mensajes de Contacto',
-                                    'petitions' => 'Peticiones de Oración',
-                                    'users' => 'Usuarios (Configuración)',
-                                ])
-                                ->columns(2)
-                                ->hidden(fn($get) => $get('is_super_admin')),
-                        ])
+                            foreach (array_keys(User::modulePermissionSchema()) as $moduleKey) {
+                                $enabledModules[$moduleKey] = ! empty($effective[$moduleKey]);
+                            }
+
+                            return [
+                                'is_super_admin' => $record->is_super_admin,
+                                'enabled_modules' => $enabledModules,
+                                'permissions' => $effective,
+                            ];
+                        })
+                        ->form(function (): array {
+                            $moduleCards = [];
+
+                            foreach (User::modulePermissionSchema() as $moduleKey => $config) {
+                                $totalActions = count($config['actions']);
+
+                                $moduleCards[] = Section::make()
+                                    ->compact()
+                                    ->schema([
+                                        Toggle::make("enabled_modules.{$moduleKey}")
+                                            ->label($config['label'])
+                                            ->helperText(function (Get $get) use ($moduleKey, $totalActions): string {
+                                                if (! $get("enabled_modules.{$moduleKey}")) {
+                                                    return 'Sin acceso · Actívalo para desplegar los subpermisos';
+                                                }
+
+                                                $selectedCount = count((array) ($get("permissions.{$moduleKey}") ?? []));
+
+                                                return "{$selectedCount} de {$totalActions} subpermisos activos";
+                                            })
+                                            ->live()
+                                            ->afterStateUpdated(function (bool $state, Get $get, Set $set) use ($moduleKey): void {
+                                                if ($state) {
+                                                    $current = (array) ($get("permissions.{$moduleKey}") ?? []);
+                                                    if (empty($current)) {
+                                                        $set("permissions.{$moduleKey}", ['view']);
+                                                    }
+                                                } else {
+                                                    $set("permissions.{$moduleKey}", []);
+                                                }
+                                            }),
+
+                                        Section::make('Subpermisos del módulo')
+                                            ->compact()
+                                            ->collapsible()
+                                            ->visible(fn (Get $get): bool => (bool) $get("enabled_modules.{$moduleKey}"))
+                                            ->schema([
+                                                CheckboxList::make("permissions.{$moduleKey}")
+                                                    ->hiddenLabel()
+                                                    ->options($config['actions'])
+                                                    ->columns(2)
+                                                    ->bulkToggleable()
+                                                    ->live(),
+                                            ]),
+                                    ]);
+                            }
+
+                            return [
+                                Toggle::make('is_super_admin')
+                                    ->label('Administrador Maestro (Acceso Total a todos los módulos y acciones)')
+                                    ->live(),
+
+                                Grid::make(2)
+                                    ->schema($moduleCards)
+                                    ->hidden(fn (Get $get): bool => (bool) $get('is_super_admin')),
+                            ];
+                        })
                         ->action(function (User $record, array $data): void {
-                            $record->update([
-                                'is_super_admin' => $data['is_super_admin'],
-                                'modules' => $data['is_super_admin'] ? null : $data['modules'],
-                            ]);
+                            if ($data['is_super_admin']) {
+                                $record->update([
+                                    'is_super_admin' => true,
+                                    'modules' => null,
+                                    'permissions' => null,
+                                ]);
+                            } else {
+                                $enabledModules = $data['enabled_modules'] ?? [];
+                                $rawPermissions = $data['permissions'] ?? [];
+                                $cleanPermissions = [];
+
+                                foreach (User::modulePermissionSchema() as $moduleKey => $config) {
+                                    if (empty($enabledModules[$moduleKey])) {
+                                        continue;
+                                    }
+
+                                    $selected = array_values(array_intersect(
+                                        array_keys($config['actions']),
+                                        is_array($rawPermissions[$moduleKey] ?? null) ? $rawPermissions[$moduleKey] : []
+                                    ));
+
+                                    if (empty($selected) && array_key_exists('view', $config['actions'])) {
+                                        $selected = ['view'];
+                                    }
+
+                                    if (! empty($selected)) {
+                                        if (array_key_exists('view', $config['actions']) && ! in_array('view', $selected, true)) {
+                                            array_unshift($selected, 'view');
+                                        }
+                                        $cleanPermissions[$moduleKey] = $selected;
+                                    }
+                                }
+
+                                $record->update([
+                                    'is_super_admin' => false,
+                                    'modules' => array_keys($cleanPermissions),
+                                    'permissions' => $cleanPermissions,
+                                ]);
+                            }
 
                             Notification::make()
-                                ->title('Módulos y permisos asignados con éxito')
+                                ->title('Módulos y subpermisos actualizados con éxito')
                                 ->success()
                                 ->send();
                         }),

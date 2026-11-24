@@ -17,7 +17,7 @@ class EventController extends Controller
     public function eventsHome(): JsonResponse
     {
         $events = Event::query()
-            ->with('eventType')
+            ->with(['eventType', 'prayers', 'songs'])
             ->where('is_featured', true)
             ->where('status', 'published')
             ->whereDate('start_datetime', '>=', Carbon::today())
@@ -33,7 +33,7 @@ class EventController extends Controller
     public function showBySlug(string $slug): JsonResponse
     {
         $event = Event::query()
-            ->with('eventType')
+            ->with(['eventType', 'prayers', 'songs'])
             ->where('slug', $slug)
             ->first();
 
@@ -64,7 +64,7 @@ class EventController extends Controller
         $month = $request->query('month');
 
         $events = Event::query()
-            ->with('eventType')
+            ->with(['eventType', 'prayers', 'songs'])
             ->whereYear('start_datetime', $year)
             ->whereMonth('start_datetime', $month)
             ->whereIn('status', ['published', 'completed'])

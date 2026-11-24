@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -17,6 +18,8 @@ class ReportController extends Controller
      */
     public function downloadBirthdays(): StreamedResponse
     {
+        abort_unless(Auth::user()?->hasPermission('reports', 'export'), 403, 'No tienes permiso para exportar reportes.');
+
         $rows = DB::select('SELECT * FROM vw_cumpleanos_mes_actual ORDER BY dia_cumpleanos ASC');
 
         $headers = [
@@ -138,6 +141,8 @@ class ReportController extends Controller
      */
     public function downloadPastoreo(): StreamedResponse
     {
+        abort_unless(Auth::user()?->hasPermission('reports', 'export'), 403, 'No tienes permiso para exportar reportes.');
+
         $rows = DB::select('SELECT * FROM vw_seguimiento_pastoreo ORDER BY dias_sin_asistir DESC');
 
         $headers = [

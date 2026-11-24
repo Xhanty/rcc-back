@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Administration;
 
+use App\Filament\Concerns\HasModulePermissions;
 use App\Filament\Resources\Administration\SongResource\Pages;
 use App\Models\Song;
 use BackedEnum;
@@ -28,22 +29,24 @@ use UnitEnum;
 
 class SongResource extends Resource
 {
+    use HasModulePermissions;
+
     protected static ?string $model = Song::class;
 
     protected static ?string $modelLabel = 'Canción';
 
     protected static ?string $pluralModelLabel = 'Canciones';
 
-    public static function canViewAny(): bool
+    protected static function getPermissionModule(): string
     {
-        return Auth::user()?->hasModuleAccess('songs') ?? false;
+        return 'songs';
     }
 
     protected static ?string $navigationLabel = 'Canciones';
 
     protected static string|UnitEnum|null $navigationGroup = 'Administración';
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 3;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMusicalNote;
 

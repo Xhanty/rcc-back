@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Administration;
 
+use App\Filament\Concerns\HasModulePermissions;
 use App\Filament\Resources\Administration\EventResource\Pages;
 use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Actions\Action;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Components\Utilities\Get;
@@ -44,22 +46,24 @@ use UnitEnum;
 
 class EventResource extends Resource
 {
+    use HasModulePermissions;
+
     protected static ?string $model = Event::class;
 
     protected static ?string $modelLabel = 'Evento';
 
     protected static ?string $pluralModelLabel = 'Eventos';
 
-    public static function canViewAny(): bool
+    protected static function getPermissionModule(): string
     {
-        return Auth::user()?->hasModuleAccess('events') ?? false;
+        return 'events';
     }
 
     protected static ?string $navigationLabel = 'Eventos';
 
     protected static string|UnitEnum|null $navigationGroup = 'Administración';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 7;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
 
@@ -106,6 +110,21 @@ class EventResource extends Resource
                                 ->required()
                                 ->placeholder('Selecciona un tipo de evento'),
 
+                            Grid::make(2)
+                                ->schema([
+                                    TextInput::make('guest_name')
+                                        ->label('Nombre del Invitado (Opcional)')
+                                        ->prefixIcon(Heroicon::OutlinedUser)
+                                        ->maxLength(255)
+                                        ->placeholder('Ej. Padre Freddy Bustamante'),
+
+                                    TextInput::make('guest_instagram')
+                                        ->label('Instagram del Invitado (Opcional)')
+                                        ->prefixIcon(Heroicon::OutlinedGlobeAlt)
+                                        ->maxLength(500)
+                                        ->placeholder('Ej. https://www.instagram.com/usuario o @usuario'),
+                                ]),
+
                             Textarea::make('short_description')
                                 ->label('Descripción Corta')
                                 ->rows(3)
@@ -129,19 +148,19 @@ class EventResource extends Resource
                                 ->directory('events/banners')
                                 ->columnSpanFull(),
 
-                            Select::make('prayer_id')
-                                ->label('Oración del Evento')
+                            Select::make('prayers')
+                                ->label('Oraciones del Evento')
                                 ->relationship(
-                                    name: 'prayer',
+                                    name: 'prayers',
                                     titleAttribute: 'title',
                                     modifyQueryUsing: fn(Builder $query) => $query->where('type', 'oracion')
                                 )
+                                ->multiple()
                                 ->searchable()
                                 ->preload()
-                                ->nullable()
                                 ->prefixIcon(Heroicon::OutlinedBookOpen)
-                                ->helperText('Opcional. Selecciona una oración para este evento.')
-                                ->placeholder('Selecciona una oración'),
+                                ->helperText('Opcional. Selecciona una o más oraciones para este evento.')
+                                ->placeholder('Selecciona oraciones'),
 
                             Select::make('songs')
                                 ->label('Canciones del Evento')
@@ -234,7 +253,7 @@ class EventResource extends Resource
                         ]),
                 ])
                     ->skippable()
-                    ->extraAttributes(['class' => 'rcc-event-wizard [&_.fi-sc-wizard-footer]:!hidden'])
+                    ->extraAttributes(['class' => 'rcc-event-wizard'])
                     ->columnSpanFull()
             ])
             ->columns(1);
@@ -278,6 +297,7 @@ class EventResource extends Resource
 
                 SelectColumn::make('status')
                     ->label('Estado')
+                    ->disabled(fn (): bool => ! (Auth::user()?->hasPermission('events', 'edit') ?? false))
                     ->options([
                         'draft' => 'Borrador',
                         'published' => 'Publicado',

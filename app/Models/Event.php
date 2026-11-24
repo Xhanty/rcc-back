@@ -14,6 +14,8 @@ class Event extends Model
 
     protected $fillable = [
         'event_type_id',
+        'guest_name',
+        'guest_instagram',
         'prayer_id',
         'title',
         'slug',
@@ -63,16 +65,56 @@ class Event extends Model
         return $this->belongsTo(Prayer::class, 'prayer_id');
     }
 
-    // Oraciones asociadas al evento
+    // Oraciones asociadas al evento (relación muchos a muchos)
     public function prayers()
     {
-        return $this->hasMany(Prayer::class, 'event_id');
+        return $this->belongsToMany(Prayer::class, 'event_prayer')->withTimestamps();
     }
 
     // Canciones asociadas al evento
     public function songs()
     {
         return $this->belongsToMany(Song::class, 'event_song')->withTimestamps();
+    }
+
+    /**
+     * URL completa del perfil de Instagram del invitado (soporta tanto @usuario como URL completa).
+     */
+    public function getGuestInstagramUrlAttribute(): ?string
+    {
+        if (blank($this->guest_instagram)) {
+            return null;
+        }
+
+        $value = trim((string) $this->guest_instagram);
+
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            return $value;
+        }
+
+        $handle = ltrim($value, '@/');
+
+        return $handle !== '' ? "https://www.instagram.com/{$handle}/" : null;
+    }
+
+    /**
+     * Usuario (@handle) de Instagram del invitado extraído desde URL o texto.
+     */
+    public function getGuestInstagramHandleAttribute(): ?string
+    {
+        if (blank($this->guest_instagram)) {
+            return null;
+        }
+
+        $value = trim((string) $this->guest_instagram);
+
+        if (preg_match('/instagram\.com\/([A-Za-z0-9._]+)/i', $value, $matches)) {
+            return '@' . $matches[1];
+        }
+
+        $handle = ltrim($value, '@/');
+
+        return $handle !== '' ? '@' . $handle : null;
     }
 
     protected static function booted(): void

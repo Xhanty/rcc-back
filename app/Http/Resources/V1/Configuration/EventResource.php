@@ -25,12 +25,18 @@ class EventResource extends JsonResource
                 : asset('images/notfound.png'),
             'description' => $this->short_description,
             'content' => $this->content,
+            'guest_name' => $this->guest_name,
+            'guest_instagram' => $this->guest_instagram,
+            'guest_instagram_url' => $this->guest_instagram_url,
+            'guest_instagram_handle' => $this->guest_instagram_handle,
             'modality' => $this->modality,
             'start_date' => Carbon::parse($this->start_datetime)->format('d/m/Y'),
             'start_time' => Carbon::parse($this->start_datetime)->format('H:i A'),
             'end_date' => Carbon::parse($this->end_datetime)->format('d/m/Y'),
             'end_time' => Carbon::parse($this->end_datetime)->format('H:i A'),
             'event_type' => EventTypeResource::make($this->whenLoaded('eventType')),
+            'prayers' => PrayerResource::collection($this->whenLoaded('prayers')),
+            'songs' => SongResource::collection($this->whenLoaded('songs')),
 
             $this->mergeWhen($this->modality === 'in_person', [
                 'venue_name' => $this->venue_name,

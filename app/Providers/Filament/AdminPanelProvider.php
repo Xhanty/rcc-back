@@ -25,8 +25,8 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 use Muazzam\SlickScrollbar\SlickScrollbarPlugin;
+use App\Filament\ImageProviders\AdminLoginBannerProvider;
 use Swis\Filament\Backgrounds\FilamentBackgroundsPlugin;
-use Swis\Filament\Backgrounds\ImageProviders\MyImages;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -57,25 +57,13 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Administración'),
                 NavigationGroup::make('Configuración'),
             ])
-            ->navigationItems([
-                NavigationItem::make('Ministerios')
-                    ->group('Administración')
-                    ->icon('heroicon-o-user-group')
-                    ->sort(8)
-                    ->url('#'),
-                NavigationItem::make('Banners')
-                    ->group('Administración')
-                    ->icon('heroicon-o-photo')
-                    ->sort(9)
-                    ->url('#'),
-            ])
             ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,
                 fn () => view('filament.components.notification-bell')
             )
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn () => new \Illuminate\Support\HtmlString('<style>.rcc-event-wizard .fi-sc-wizard-footer { display: none !important; }</style>')
+                fn () => view('filament.components.event-wizard-styles')
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -102,11 +90,17 @@ class AdminPanelProvider extends PanelProvider
                 SlickScrollbarPlugin::make(),
                 FilamentBackgroundsPlugin::make()
                     ->imageProvider(
-                        MyImages::make()
-                            ->directory('backgrounds')
+                        AdminLoginBannerProvider::make()
                     ),
                 BreezyCore::make()
-                    ->myProfile()
+                    ->myProfile(
+                        hasAvatars: true,
+                    )
+                    ->myProfileComponents([
+                        'personal_info' => \App\Livewire\Profile\CustomPersonalInfo::class,
+                        'my_ministries' => \App\Livewire\Profile\MyMinistries::class,
+                        'my_permissions' => \App\Livewire\Profile\MyPermissions::class,
+                    ])
                     ->enableTwoFactorAuthentication()
                     // ->enablePasskeys()
                     // ->enableSanctumTokens()

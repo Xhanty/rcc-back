@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Configuration;
 
+use App\Filament\Concerns\HasModulePermissions;
 use App\Filament\Resources\Configuration\EventTypeResource\Pages;
 use App\Models\EventType;
 use Illuminate\Support\Facades\Auth;
@@ -31,22 +32,24 @@ use UnitEnum;
 
 class EventTypeResource extends Resource
 {
+    use HasModulePermissions;
+
     protected static ?string $model = EventType::class;
 
     protected static ?string $modelLabel = 'Tipo de Evento';
 
     protected static ?string $pluralModelLabel = 'Tipos de Eventos';
 
-    public static function canViewAny(): bool
+    protected static function getPermissionModule(): string
     {
-        return Auth::user()?->hasModuleAccess('event_types') ?? false;
+        return 'event_types';
     }
 
     protected static ?string $navigationLabel = 'Tipo de Eventos';
 
     protected static string|UnitEnum|null $navigationGroup = 'Configuración';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Administration;
 
+use App\Filament\Concerns\HasModulePermissions;
 use App\Filament\Resources\Administration\PrayerResource\Pages;
 use App\Models\Prayer;
 use BackedEnum;
@@ -30,22 +31,24 @@ use UnitEnum;
 
 class PrayerResource extends Resource
 {
+    use HasModulePermissions;
+
     protected static ?string $model = Prayer::class;
 
     protected static ?string $modelLabel = 'Oración o Novena';
 
     protected static ?string $pluralModelLabel = 'Oraciones y Novenas';
 
-    public static function canViewAny(): bool
+    protected static function getPermissionModule(): string
     {
-        return Auth::user()?->hasModuleAccess('prayers') ?? false;
+        return 'prayers';
     }
 
     protected static ?string $navigationLabel = 'Oraciones y Novenas';
 
     protected static string|UnitEnum|null $navigationGroup = 'Administración';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 10;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
 

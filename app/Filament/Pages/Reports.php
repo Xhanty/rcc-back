@@ -18,7 +18,7 @@ class Reports extends Page
 
     protected static ?string $title = 'Reportes';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 13;
 
     protected string $view = 'filament.pages.reports';
 
@@ -29,7 +29,12 @@ class Reports extends Page
 
     public static function canAccess(): bool
     {
-        return Auth::check();
+        return Auth::user()?->hasPermission('reports', 'view') ?? false;
+    }
+
+    public function canExport(): bool
+    {
+        return Auth::user()?->hasPermission('reports', 'export') ?? false;
     }
 
     public function getBirthdaysData(): array

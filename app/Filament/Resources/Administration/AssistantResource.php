@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Administration;
 
+use App\Filament\Concerns\HasModulePermissions;
 use App\Filament\Resources\Administration\AssistantResource\Pages;
 use App\Models\Assistant;
 use Illuminate\Support\Facades\Auth;
@@ -30,22 +31,24 @@ use UnitEnum;
 
 class AssistantResource extends Resource
 {
+    use HasModulePermissions;
+
     protected static ?string $model = Assistant::class;
 
     protected static ?string $modelLabel = 'Asistente';
 
     protected static ?string $pluralModelLabel = 'Asistentes';
 
-    public static function canViewAny(): bool
+    protected static function getPermissionModule(): string
     {
-        return Auth::user()?->hasModuleAccess('assistants') ?? false;
+        return 'assistants';
     }
 
     protected static ?string $navigationLabel = 'Asistentes';
 
     protected static string|UnitEnum|null $navigationGroup = 'Administración';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 1;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedIdentification;
 

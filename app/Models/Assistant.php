@@ -15,12 +15,19 @@ class Assistant extends Model
         'email',
         'phone',
         'birth_date',
+        'accepted_terms',
+        'terms_accepted_at',
+        'terms_version',
+        'consent_ip',
+        'consent_user_agent',
     ];
 
     protected function casts(): array
     {
         return [
             'birth_date' => 'date',
+            'accepted_terms' => 'boolean',
+            'terms_accepted_at' => 'datetime',
         ];
     }
 

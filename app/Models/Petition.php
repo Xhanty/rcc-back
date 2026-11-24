@@ -17,5 +17,16 @@ class Petition extends Model
         'email', // nullable
         'petition',
         'status',
+        'accepted_terms',
+        'terms_accepted_at',
+        'terms_version',
+        'consent_ip',
+        'consent_user_agent',
+    ];
+
+    protected $casts = [
+        'status' => 'string',
+        'accepted_terms' => 'boolean',
+        'terms_accepted_at' => 'datetime',
     ];
 }
