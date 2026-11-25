@@ -37,15 +37,38 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->font('Inter')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => [
+                    50 => '#eef8f8',
+                    100 => '#d5eeee',
+                    200 => '#aedede',
+                    300 => '#7ac5c7',
+                    400 => '#47a3a7',
+                    500 => '#2a8286',
+                    600 => '#1B4D4F',
+                    700 => '#174143',
+                    800 => '#153638',
+                    900 => '#132e30',
+                    950 => '#091b1c',
+                ],
+                'warning' => Color::hex('#D97706'),
+                'success' => Color::hex('#10B981'),
+                'info' => Color::hex('#2A8286'),
+                'danger' => Color::hex('#DC2626'),
+                'gray' => Color::Zinc,
             ])
             ->brandLogo(new \Illuminate\Support\HtmlString('
                 <div style="display: flex; flex-direction: row; align-items: center; gap: 0.625rem; height: 2.25rem; white-space: nowrap;">
-                    <img src="' . asset('icon.png') . '" alt="Logo" style="height: 2.25rem; width: auto; max-height: 100%; flex-shrink: 0;" />
-                    <span style="font-weight: 700; font-size: 1.125rem; line-height: 1.75rem; color: inherit;" class="text-gray-950 dark:text-white">
-                        Resucitados RCC
-                    </span>
+                    <img src="' . asset('icon.png') . '" alt="Logo" style="height: 2.25rem; width: auto; max-height: 100%; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));" />
+                    <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                        <span style="font-family: \'Montserrat\', sans-serif; font-weight: 800; font-size: 1.05rem; letter-spacing: -0.02em; color: inherit;" class="text-gray-950 dark:text-white">
+                            RESUCITADOS
+                        </span>
+                        <span style="font-family: \'Inter\', sans-serif; font-weight: 700; font-size: 0.65rem; letter-spacing: 0.12em; color: #D97706;">
+                            PANEL ADMINISTRATIVO
+                        </span>
+                    </div>
                 </div>
             '))
             ->brandLogoHeight('2.25rem')

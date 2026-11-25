@@ -69,10 +69,20 @@
             box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.25), 0 10px 15px -6px rgba(0, 0, 0, 0.15) !important;
         }
         .dark .rcc-notif-panel {
-            background-color: #18181b !important;
+            background-color: #171c1c !important;
             color: #f9fafb !important;
-            border: 1px solid #27272a !important;
+            border: 1px solid #272d2d !important;
             box-shadow: 0 24px 38px -5px rgba(0, 0, 0, 0.75), 0 10px 15px -6px rgba(0, 0, 0, 0.6) !important;
+        }
+        @media (max-width: 639px) {
+            .rcc-notif-panel {
+                position: fixed !important;
+                top: 4.25rem !important;
+                left: 0.75rem !important;
+                right: 0.75rem !important;
+                width: auto !important;
+                max-width: none !important;
+            }
         }
         .rcc-notif-header {
             display: flex;
